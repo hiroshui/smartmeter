@@ -1,0 +1,9 @@
+version: '3'
+services:
+  tasmota-logger:
+    image: hiroshui/tasmota-logger
+    container_name: tasmota-logger
+    restart: unless-stopped
+    environment:
+      - TASMOTA_IP=http://192.168.X.X
+      - GOOGLE_SHEETS_URL=https://script.google.com/macros/s/$API_KEY/exec
