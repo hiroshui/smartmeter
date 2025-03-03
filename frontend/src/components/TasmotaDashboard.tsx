@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { FaBolt, FaBatteryFull, FaPlug, FaChartLine } from "react-icons/fa";
 
-const TASMOTA_API = "http://localhost:4000/tasmota"; // Dein Proxy
+const TASMOTA_API = "https://tasmota.hiroshui.men/tasmota"; // Dein Proxy
 
 const TasmotaDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);

@@ -14,8 +14,8 @@ app.get("/tasmota", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: "Fehler beim Abrufen der Tasmota-Daten" });
+    res.status(500).json({ error: "Error while fetching data from " + TASMOTA_IP });
   }
 });
 
-app.listen(4000, () => console.log("Proxy läuft auf http://localhost:4000"));
+app.listen(4000, '0.0.0.0', () => console.log("Proxy runs on port 4000."));
