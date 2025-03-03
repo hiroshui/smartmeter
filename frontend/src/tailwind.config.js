@@ -1,0 +1,9 @@
+module.exports = {
+    darkMode: "class", // Aktiviert Dark Mode per CSS-Klasse
+    content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+    theme: {
+      extend: {},
+    },
+    plugins: [],
+  };
+  

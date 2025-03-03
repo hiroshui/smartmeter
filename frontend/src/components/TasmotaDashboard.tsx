@@ -9,8 +9,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import { FaBolt, FaBatteryFull, FaPlug, FaChartLine } from "react-icons/fa";
+import ThemeToggle from "./ThemeToggle";
 
-const TASMOTA_API = "https://tasmota.hiroshui.men/tasmota"; // Dein Proxy
+const API_URL = "https://tasmota.hiroshui.men/tasmota"; // Externe API
 
 const TasmotaDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
@@ -19,7 +20,7 @@ const TasmotaDashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(TASMOTA_API);
+      const response = await fetch(API_URL);
       if (!response.ok) throw new Error("Fehler beim Abrufen der Daten");
       const result = await response.json();
 
@@ -35,14 +36,17 @@ const TasmotaDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Alle 5 Sek. aktualisieren
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-6">
       <div className="w-full max-w-4xl text-center">
-        <h1 className="text-4xl font-bold mb-6">⚡ Stromzähler Dashboard</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-bold">⚡ Stromzähler Dashboard</h1>
+          <ThemeToggle />
+        </div>
 
         {error && <p className="text-red-500 text-lg">❌ {error}</p>}
 
@@ -50,28 +54,28 @@ const TasmotaDashboard: React.FC = () => {
           <p className="text-xl">⏳ Lade Daten...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
               <FaPlug className="text-5xl text-yellow-400 mb-2" />
               <p className="text-lg font-semibold">Leistung</p>
               <p className="text-3xl font-bold">
                 {data.StatusSNS?.Power?.Power_curr || 0} W
               </p>
             </div>
-            <div className="bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
               <FaBatteryFull className="text-5xl text-green-400 mb-2" />
               <p className="text-lg font-semibold">Verbrauch</p>
               <p className="text-3xl font-bold">
                 {data.StatusSNS?.Power?.Total_in || 0} kWh
               </p>
             </div>
-            <div className="bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
               <FaBolt className="text-5xl text-blue-400 mb-2" />
               <p className="text-lg font-semibold">Einspeisung</p>
               <p className="text-3xl font-bold">
                 {data.StatusSNS?.Power?.Total_out || 0} kWh
               </p>
             </div>
-            <div className="bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
               <FaChartLine className="text-5xl text-red-400 mb-2" />
               <p className="text-lg font-semibold">Zählernummer</p>
               <p className="text-md font-bold">
