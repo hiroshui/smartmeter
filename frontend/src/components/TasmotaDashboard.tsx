@@ -23,7 +23,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import ThemeToggle from "./ThemeToggle";
 import CostCalculator from "./CostCalculator";
 import {
   BatteryFull,
@@ -114,13 +113,6 @@ const TasmotaDashboard: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, textAlign: "center" }}>
-      <Grid container justifyContent="space-between" alignItems="center">
-        <Typography variant="h4" fontWeight="bold">
-          ⚡ Smart Meter Dashboard
-        </Typography>
-        <ThemeToggle />
-      </Grid>
-
       <Box
         sx={{
           mt: 2,
