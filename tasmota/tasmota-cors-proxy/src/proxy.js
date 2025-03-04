@@ -12,8 +12,10 @@ app.get("/tasmota", async (req, res) => {
   try {
     const response = await fetch(`${TASMOTA_IP}/cm?cmnd=Status%2010`);
     const data = await response.json();
+    console.log("successfully received data");
     res.json(data);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Error while fetching data from " + TASMOTA_IP });
   }
 });
