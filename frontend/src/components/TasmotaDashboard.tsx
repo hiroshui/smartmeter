@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   Checkbox,
   useTheme,
+  CardContent,
 } from "@mui/material";
 import {
   LineChart,
@@ -24,6 +25,12 @@ import {
 } from "recharts";
 import ThemeToggle from "./ThemeToggle";
 import CostCalculator from "./CostCalculator";
+import {
+  BatteryFull,
+  Bolt,
+  ElectricalServices,
+  Power,
+} from "@mui/icons-material";
 
 const API_URL = "/api/tasmota";
 const LOCAL_API_URL = "http://localhost:4000/tasmota";
@@ -163,10 +170,13 @@ const TasmotaDashboard: React.FC = () => {
                 elevation={4}
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
-                <Typography variant="h6">Cur. Power Consumption</Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {power} W
-                </Typography>
+                <CardContent>
+                  <Power color="primary" fontSize="large" />
+                  <Typography variant="h6">Cur. Power Consumption</Typography>
+                  <Typography variant="h4" fontWeight="bold">
+                    {power} W
+                  </Typography>
+                </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -174,10 +184,13 @@ const TasmotaDashboard: React.FC = () => {
                 elevation={4}
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
-                <Typography variant="h6">Total Usage</Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {totalIn} kWh
-                </Typography>
+                <CardContent>
+                  <BatteryFull color="secondary" fontSize="large" />
+                  <Typography variant="h6">Total Usage</Typography>
+                  <Typography variant="h4" fontWeight="bold">
+                    {totalIn} kWh
+                  </Typography>
+                </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -185,10 +198,13 @@ const TasmotaDashboard: React.FC = () => {
                 elevation={4}
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
-                <Typography variant="h6">Total Feed-in</Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {totalOut} kWh
-                </Typography>
+                <CardContent>
+                  <Bolt color="error" fontSize="large" />
+                  <Typography variant="h6">Total Feed-in</Typography>
+                  <Typography variant="h4" fontWeight="bold">
+                    {totalOut} kWh
+                  </Typography>
+                </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -201,8 +217,11 @@ const TasmotaDashboard: React.FC = () => {
                   wordBreak: "break-word",
                 }}
               >
-                <Typography variant="h6">Meter Number</Typography>
-                <Typography variant="h5">{meterNumber}</Typography>
+                <CardContent>
+                  <ElectricalServices color="success" fontSize="large" />
+                  <Typography variant="h6">Meter Number</Typography>
+                  <Typography variant="h5">{meterNumber}</Typography>
+                </CardContent>
               </Card>
             </Grid>
           </Grid>

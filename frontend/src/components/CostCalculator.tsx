@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Typography, TextField, Grid } from "@mui/material";
+import { Card, Typography, TextField, Grid, CardContent } from "@mui/material";
 import { Euro } from "@mui/icons-material";
 
 interface CostCalculatorProps {
@@ -89,48 +89,57 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({
       {/* Cost per interval */}
       <Grid item xs={12} sm={6}>
         <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
-          <Euro color="primary" sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h6">
-            Cost per Interval ({refreshRate / 1000} secs)
-          </Typography>
-          <Typography variant="h4" fontWeight="bold">
-            €{costPerInterval.toFixed(6)}
-          </Typography>
+          <CardContent>
+            <Euro color="primary" sx={{ fontSize: 50, mb: 1 }} />
+            <Typography variant="h6">
+              Cost per Interval ({refreshRate / 1000} secs)
+            </Typography>
+            <Typography variant="h4" fontWeight="bold">
+              €{costPerInterval.toFixed(6)}
+            </Typography>
+          </CardContent>
         </Card>
       </Grid>
 
       {/* Earnings per interval */}
       <Grid item xs={12} sm={6}>
         <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
-          <Euro color="success" sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h6">
-            Earnings per Interval ({refreshRate / 1000} secs)
-          </Typography>
-          <Typography variant="h4" fontWeight="bold">
-            €{earningsPerInterval.toFixed(6)}
-          </Typography>
+          <CardContent>
+            <Euro color="success" sx={{ fontSize: 50, mb: 1 }} />
+            <Typography variant="h6">
+              Earnings per Interval ({refreshRate / 1000} secs)
+            </Typography>
+            <Typography variant="h4" fontWeight="bold">
+              €{earningsPerInterval.toFixed(6)}
+            </Typography>
+          </CardContent>
         </Card>
       </Grid>
 
       {/* Total cost since launch */}
       <Grid item xs={12} sm={6}>
         <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
-          <Euro color="secondary" sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h6">Total Cost since Launch</Typography>
-          <Typography variant="h4" fontWeight="bold">
-            €{totalCost.toFixed(4)}
-          </Typography>
+          <CardContent>
+            {" "}
+            <Euro color="secondary" sx={{ fontSize: 50, mb: 1 }} />
+            <Typography variant="h6">Total Cost since Launch</Typography>
+            <Typography variant="h4" fontWeight="bold">
+              €{totalCost.toFixed(4)}
+            </Typography>
+          </CardContent>
         </Card>
       </Grid>
 
       {/* Total feed-in earnings */}
       <Grid item xs={12} sm={6}>
         <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
-          <Euro color="success" sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h6">Total Feed-In Earnings</Typography>
-          <Typography variant="h4" fontWeight="bold">
-            €{totalEarnings.toFixed(4)}
-          </Typography>
+          <CardContent>
+            <Euro color="success" sx={{ fontSize: 50, mb: 1 }} />
+            <Typography variant="h6">Total Feed-In Earnings</Typography>
+            <Typography variant="h4" fontWeight="bold">
+              €{totalEarnings.toFixed(4)}
+            </Typography>
+          </CardContent>
         </Card>
       </Grid>
     </Grid>
