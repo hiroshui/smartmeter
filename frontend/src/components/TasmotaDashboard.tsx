@@ -151,7 +151,7 @@ const TasmotaDashboard: React.FC = () => {
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
                 <Power color="primary" sx={{ fontSize: 50, mb: 1 }} />
-                <Typography variant="h6">Power Consumption</Typography>
+                <Typography variant="h6">Cur. Power Consumption</Typography>
                 <Typography variant="h4" fontWeight="bold">
                   {power} W
                 </Typography>
