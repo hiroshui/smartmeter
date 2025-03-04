@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
@@ -10,10 +9,10 @@ const TASMOTA_IP = "http://power.meter"; // Ersetze mit deiner echten Tasmota-IP
 
 app.get("/tasmota", async (req, res) => {
   try {
-    console.log("Request from " + req.ip);
+    var utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
     const response = await fetch(`${TASMOTA_IP}/cm?cmnd=Status%2010`);
     const data = await response.json();
-    console.log("successfully requested data from tasmota.");
+    console.log(utc + " - successfully requested data from tasmota.");
     res.json(data);
   } catch (error) {
     console.log(error);
