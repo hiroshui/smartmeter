@@ -1,5 +1,3 @@
-/// <reference types="node" />
-
 import React, { useEffect, useState, useRef } from "react";
 import {
   Container,
@@ -11,14 +9,10 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  FormControlLabel,
+  Checkbox,
   useTheme,
 } from "@mui/material";
-import {
-  Bolt,
-  BatteryFull,
-  Power,
-  ElectricalServices,
-} from "@mui/icons-material";
 import {
   LineChart,
   Line,
@@ -29,13 +23,14 @@ import {
   CartesianGrid,
 } from "recharts";
 import ThemeToggle from "./ThemeToggle";
+import CostCalculator from "./CostCalculator";
 
 const API_URL = "/api/tasmota";
 const LOCAL_API_URL = "http://localhost:4000/tasmota";
 
 const TasmotaDashboard: React.FC = () => {
-  const theme = useTheme(); // Get current theme (light/dark)
-  const isDarkMode = theme.palette.mode === "dark"; // Check if dark mode is active
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === "dark";
 
   const [power, setPower] = useState<number>(0);
   const [totalIn, setTotalIn] = useState<number>(0);
@@ -47,37 +42,11 @@ const TasmotaDashboard: React.FC = () => {
     return parseInt(localStorage.getItem("refreshRate") || "60000", 10);
   });
 
+  const [enableCostTracking, setEnableCostTracking] = useState<boolean>(() => {
+    return localStorage.getItem("enableCostTracking") === "true";
+  });
+
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const updateData = (result: any) => {
-    setPower((prev) =>
-      prev !== result?.StatusSNS?.Power?.Power_curr
-        ? result?.StatusSNS?.Power?.Power_curr || 0
-        : prev
-    );
-    setTotalIn((prev) =>
-      prev !== result?.StatusSNS?.Power?.Total_in
-        ? result?.StatusSNS?.Power?.Total_in || 0
-        : prev
-    );
-    setTotalOut((prev) =>
-      prev !== result?.StatusSNS?.Power?.Total_out
-        ? result?.StatusSNS?.Power?.Total_out || 0
-        : prev
-    );
-    setMeterNumber((prev) =>
-      prev !== result?.StatusSNS?.Power?.Meter_Number
-        ? result?.StatusSNS?.Power?.Meter_Number || "Unknown"
-        : prev
-    );
-
-    const timestamp = new Date().toLocaleTimeString();
-    setHistory((prev) => [
-      ...prev.slice(-20),
-      { time: timestamp, power: result?.StatusSNS?.Power?.Power_curr || 0 },
-    ]);
-    setError(null);
-  };
 
   const fetchData = async () => {
     try {
@@ -99,6 +68,23 @@ const TasmotaDashboard: React.FC = () => {
     }
   };
 
+  const updateData = (result: any) => {
+    const newPower = result?.StatusSNS?.Power?.Power_curr || 0;
+    setPower(newPower);
+    setTotalIn(result?.StatusSNS?.Power?.Total_in || 0);
+    setTotalOut(result?.StatusSNS?.Power?.Total_out || 0);
+    setMeterNumber(result?.StatusSNS?.Power?.Meter_Number || "Unknown");
+
+    // Update history for graph
+    const timestamp = new Date().toLocaleTimeString();
+    setHistory((prev) => [
+      ...prev.slice(-20),
+      { time: timestamp, power: newPower },
+    ]);
+
+    setError(null);
+  };
+
   useEffect(() => {
     fetchData();
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -112,6 +98,13 @@ const TasmotaDashboard: React.FC = () => {
     localStorage.setItem("refreshRate", newRate.toString());
   };
 
+  const handleCostTrackingChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setEnableCostTracking(event.target.checked);
+    localStorage.setItem("enableCostTracking", event.target.checked.toString());
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, textAlign: "center" }}>
       <Grid container justifyContent="space-between" alignItems="center">
@@ -121,7 +114,16 @@ const TasmotaDashboard: React.FC = () => {
         <ThemeToggle />
       </Grid>
 
-      <Box sx={{ mt: 2, mb: 3 }}>
+      <Box
+        sx={{
+          mt: 2,
+          mb: 3,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
         <FormControl variant="outlined" sx={{ minWidth: 200 }}>
           <InputLabel>Refresh Interval</InputLabel>
           <Select
@@ -136,6 +138,16 @@ const TasmotaDashboard: React.FC = () => {
             <MenuItem value={60000}>1 Minute</MenuItem>
           </Select>
         </FormControl>
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={enableCostTracking}
+              onChange={handleCostTrackingChange}
+            />
+          }
+          label="Enable Cost Tracking"
+        />
       </Box>
 
       {error ? (
@@ -144,13 +156,13 @@ const TasmotaDashboard: React.FC = () => {
         </Typography>
       ) : (
         <>
+          {/* Grid mit Stromdaten */}
           <Grid container spacing={3} sx={{ mt: 3 }}>
             <Grid item xs={12} sm={6} md={3}>
               <Card
                 elevation={4}
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
-                <Power color="primary" sx={{ fontSize: 50, mb: 1 }} />
                 <Typography variant="h6">Cur. Power Consumption</Typography>
                 <Typography variant="h4" fontWeight="bold">
                   {power} W
@@ -162,7 +174,6 @@ const TasmotaDashboard: React.FC = () => {
                 elevation={4}
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
-                <BatteryFull color="secondary" sx={{ fontSize: 50, mb: 1 }} />
                 <Typography variant="h6">Total Usage</Typography>
                 <Typography variant="h4" fontWeight="bold">
                   {totalIn} kWh
@@ -174,7 +185,6 @@ const TasmotaDashboard: React.FC = () => {
                 elevation={4}
                 sx={{ p: 2, textAlign: "center", minHeight: 120 }}
               >
-                <Bolt color="error" sx={{ fontSize: 50, mb: 1 }} />
                 <Typography variant="h6">Total Feed-in</Typography>
                 <Typography variant="h4" fontWeight="bold">
                   {totalOut} kWh
@@ -191,16 +201,13 @@ const TasmotaDashboard: React.FC = () => {
                   wordBreak: "break-word",
                 }}
               >
-                <ElectricalServices
-                  color="success"
-                  sx={{ fontSize: 50, mb: 1 }}
-                />
                 <Typography variant="h6">Meter Number</Typography>
                 <Typography variant="h5">{meterNumber}</Typography>
               </Card>
             </Grid>
           </Grid>
 
+          {/* Live Power Consumption Graph */}
           <Box sx={{ mt: 6 }}>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
               📈 Live Power Consumption
@@ -220,6 +227,16 @@ const TasmotaDashboard: React.FC = () => {
               </LineChart>
             </ResponsiveContainer>
           </Box>
+
+          {/* Kostenanzeige nur anzeigen, wenn Checkbox aktiviert ist */}
+          {enableCostTracking && (
+            <Box sx={{ mt: 6 }}>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                💰 Energy Cost & Feed-In Earnings
+              </Typography>
+              <CostCalculator power={power} refreshRate={refreshRate} />
+            </Box>
+          )}
         </>
       )}
     </Container>
