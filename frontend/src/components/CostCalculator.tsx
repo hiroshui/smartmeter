@@ -21,24 +21,25 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({
 
   const [costPerInterval, setCostPerInterval] = useState<number>(0);
   const [totalCost, setTotalCost] = useState<number>(0);
-  const [feedInEarnings, setFeedInEarnings] = useState<number>(0);
+  const [earningsPerInterval, setEarningsPerInterval] = useState<number>(0);
+  const [totalEarnings, setTotalEarnings] = useState<number>(0);
 
   useEffect(() => {
-    // Convert interval to hours
     const intervalInHours = refreshRate / (1000 * 3600);
 
-    // Separate consumed and generated power
+    // Berechnung der verbrauchten und eingespeisten Leistung
     const consumedPower = power > 0 ? power : 0;
     const generatedPower = power < 0 ? Math.abs(power) : 0;
 
-    // Cost calculation (for consumption)
+    // Kostenberechnung
     const newCost = (consumedPower / 1000) * electricityPrice * intervalInHours;
     setCostPerInterval(newCost);
     setTotalCost((prev) => prev + newCost);
 
-    // Earnings calculation (for feed-in)
+    // Einnahmenberechnung
     const newEarnings = (generatedPower / 1000) * feedInPrice * intervalInHours;
-    setFeedInEarnings((prev) => prev + newEarnings);
+    setEarningsPerInterval(newEarnings);
+    setTotalEarnings((prev) => prev + newEarnings);
   }, [power, refreshRate, electricityPrice, feedInPrice]);
 
   const handleElectricityPriceChange = (
@@ -98,6 +99,19 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({
         </Card>
       </Grid>
 
+      {/* Earnings per interval */}
+      <Grid item xs={12} sm={6}>
+        <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
+          <Euro color="success" sx={{ fontSize: 50, mb: 1 }} />
+          <Typography variant="h6">
+            Earnings per Interval ({refreshRate / 1000} secs)
+          </Typography>
+          <Typography variant="h4" fontWeight="bold">
+            €{earningsPerInterval.toFixed(6)}
+          </Typography>
+        </Card>
+      </Grid>
+
       {/* Total cost since launch */}
       <Grid item xs={12} sm={6}>
         <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
@@ -109,15 +123,13 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({
         </Card>
       </Grid>
 
-      {/* Earnings from feed-in */}
-      <Grid item xs={12}>
+      {/* Total feed-in earnings */}
+      <Grid item xs={12} sm={6}>
         <Card elevation={4} sx={{ p: 2, textAlign: "center", minHeight: 120 }}>
           <Euro color="success" sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h6">
-            Total Feed-In Earnings since Launch
-          </Typography>
+          <Typography variant="h6">Total Feed-In Earnings</Typography>
           <Typography variant="h4" fontWeight="bold">
-            €{feedInEarnings.toFixed(4)}
+            €{totalEarnings.toFixed(4)}
           </Typography>
         </Card>
       </Grid>
