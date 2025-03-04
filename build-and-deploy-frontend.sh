@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-cp nginx.conf /etc/ngnix/site-available/default
+cp nginx.conf /etc/ngnix/sites-available/default
 
 cd frontend/
 
