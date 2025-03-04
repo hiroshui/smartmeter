@@ -143,6 +143,9 @@ const TasmotaDashboard: React.FC = () => {
             <MenuItem value={5000}>5 Seconds</MenuItem>
             <MenuItem value={10000}>10 Seconds</MenuItem>
             <MenuItem value={60000}>1 Minute</MenuItem>
+            <MenuItem value={180000}>3 Minutes</MenuItem>
+            <MenuItem value={300000}>5 Minutes</MenuItem>
+            <MenuItem value={900000}>15 Minutes</MenuItem>
           </Select>
         </FormControl>
 
