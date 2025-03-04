@@ -1,4 +1,24 @@
-import React, { useEffect, useState } from "react";
+/// <reference types="node" />
+
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Container,
+  Grid,
+  Card,
+  Typography,
+  Box,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  useTheme,
+} from "@mui/material";
+import {
+  Bolt,
+  BatteryFull,
+  Power,
+  ElectricalServices,
+} from "@mui/icons-material";
 import {
   LineChart,
   Line,
@@ -8,102 +28,201 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { FaBolt, FaBatteryFull, FaPlug, FaChartLine } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 
-const API_URL = "/api/tasmota"; // Externe API
+const API_URL = "/api/tasmota";
+const LOCAL_API_URL = "http://localhost:4000/tasmota";
 
 const TasmotaDashboard: React.FC = () => {
-  const [data, setData] = useState<any>(null);
+  const theme = useTheme(); // Get current theme (light/dark)
+  const isDarkMode = theme.palette.mode === "dark"; // Check if dark mode is active
+
+  const [power, setPower] = useState<number>(0);
+  const [totalIn, setTotalIn] = useState<number>(0);
+  const [totalOut, setTotalOut] = useState<number>(0);
+  const [meterNumber, setMeterNumber] = useState<string>("Unknown");
   const [history, setHistory] = useState<{ time: string; power: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [refreshRate, setRefreshRate] = useState<number>(() => {
+    return parseInt(localStorage.getItem("refreshRate") || "60000", 10);
+  });
+
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const updateData = (result: any) => {
+    setPower((prev) =>
+      prev !== result?.StatusSNS?.Power?.Power_curr
+        ? result?.StatusSNS?.Power?.Power_curr || 0
+        : prev
+    );
+    setTotalIn((prev) =>
+      prev !== result?.StatusSNS?.Power?.Total_in
+        ? result?.StatusSNS?.Power?.Total_in || 0
+        : prev
+    );
+    setTotalOut((prev) =>
+      prev !== result?.StatusSNS?.Power?.Total_out
+        ? result?.StatusSNS?.Power?.Total_out || 0
+        : prev
+    );
+    setMeterNumber((prev) =>
+      prev !== result?.StatusSNS?.Power?.Meter_Number
+        ? result?.StatusSNS?.Power?.Meter_Number || "Unknown"
+        : prev
+    );
+
+    const timestamp = new Date().toLocaleTimeString();
+    setHistory((prev) => [
+      ...prev.slice(-20),
+      { time: timestamp, power: result?.StatusSNS?.Power?.Power_curr || 0 },
+    ]);
+    setError(null);
+  };
 
   const fetchData = async () => {
     try {
       const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Fehler beim Abrufen der Daten");
+      if (!response.ok) throw new Error("Error fetching data from API.");
       const result = await response.json();
-
-      const timestamp = new Date().toLocaleTimeString();
-      const power = result.StatusSNS?.Power?.Power_curr || 0;
-      setHistory((prev) => [...prev.slice(-20), { time: timestamp, power }]);
-      setData(result);
-      setError(null);
+      updateData(result);
     } catch (err: any) {
-      setError(err.message);
+      console.warn("Main API failed, trying local API...");
+      try {
+        const response = await fetch(LOCAL_API_URL);
+        if (!response.ok)
+          throw new Error("Error fetching data from local API.");
+        const result = await response.json();
+        updateData(result);
+      } catch (err: any) {
+        setError("Failed to load data from both APIs.");
+      }
     }
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // every 10 secs to reduce workload
-    return () => clearInterval(interval);
-  }, []);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(fetchData, refreshRate);
+    return () => clearInterval(intervalRef.current!);
+  }, [refreshRate]);
+
+  const handleRefreshRateChange = (event: any) => {
+    const newRate = parseInt(event.target.value, 10);
+    setRefreshRate(newRate);
+    localStorage.setItem("refreshRate", newRate.toString());
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-6">
-      <div className="w-full max-w-4xl text-center">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold">⚡ Stromzähler Dashboard</h1>
-          <ThemeToggle />
-        </div>
+    <Container maxWidth="lg" sx={{ mt: 4, textAlign: "center" }}>
+      <Grid container justifyContent="space-between" alignItems="center">
+        <Typography variant="h4" fontWeight="bold">
+          ⚡ Smart Meter Dashboard
+        </Typography>
+        <ThemeToggle />
+      </Grid>
 
-        {error && <p className="text-red-500 text-lg">❌ {error}</p>}
+      <Box sx={{ mt: 2, mb: 3 }}>
+        <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+          <InputLabel>Refresh Interval</InputLabel>
+          <Select
+            value={refreshRate}
+            onChange={handleRefreshRateChange}
+            label="Refresh Interval"
+          >
+            <MenuItem value={1000}>1 Second</MenuItem>
+            <MenuItem value={3000}>3 Seconds</MenuItem>
+            <MenuItem value={5000}>5 Seconds</MenuItem>
+            <MenuItem value={10000}>10 Seconds</MenuItem>
+            <MenuItem value={60000}>1 Minute</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
-        {!data ? (
-          <p className="text-xl">⏳ Lade Daten...</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
-              <FaPlug className="text-5xl text-yellow-400 mb-2" />
-              <p className="text-lg font-semibold">Leistung</p>
-              <p className="text-3xl font-bold">
-                {data.StatusSNS?.Power?.Power_curr || 0} W
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
-              <FaBatteryFull className="text-5xl text-green-400 mb-2" />
-              <p className="text-lg font-semibold">Verbrauch</p>
-              <p className="text-3xl font-bold">
-                {data.StatusSNS?.Power?.Total_in || 0} kWh
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
-              <FaBolt className="text-5xl text-blue-400 mb-2" />
-              <p className="text-lg font-semibold">Einspeisung</p>
-              <p className="text-3xl font-bold">
-                {data.StatusSNS?.Power?.Total_out || 0} kWh
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex flex-col items-center">
-              <FaChartLine className="text-5xl text-red-400 mb-2" />
-              <p className="text-lg font-semibold">Zählernummer</p>
-              <p className="text-md font-bold">
-                {data.StatusSNS?.Power?.Meter_Number || "Unbekannt"}
-              </p>
-            </div>
-          </div>
-        )}
+      {error ? (
+        <Typography color="error" variant="h6" sx={{ mt: 4 }}>
+          ❌ {error}
+        </Typography>
+      ) : (
+        <>
+          <Grid container spacing={3} sx={{ mt: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card
+                elevation={4}
+                sx={{ p: 2, textAlign: "center", minHeight: 120 }}
+              >
+                <Power color="primary" sx={{ fontSize: 50, mb: 1 }} />
+                <Typography variant="h6">Power Consumption</Typography>
+                <Typography variant="h4" fontWeight="bold">
+                  {power} W
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card
+                elevation={4}
+                sx={{ p: 2, textAlign: "center", minHeight: 120 }}
+              >
+                <BatteryFull color="secondary" sx={{ fontSize: 50, mb: 1 }} />
+                <Typography variant="h6">Total Usage</Typography>
+                <Typography variant="h4" fontWeight="bold">
+                  {totalIn} kWh
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card
+                elevation={4}
+                sx={{ p: 2, textAlign: "center", minHeight: 120 }}
+              >
+                <Bolt color="error" sx={{ fontSize: 50, mb: 1 }} />
+                <Typography variant="h6">Total Feed-in</Typography>
+                <Typography variant="h4" fontWeight="bold">
+                  {totalOut} kWh
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card
+                elevation={4}
+                sx={{
+                  p: 2,
+                  textAlign: "center",
+                  minHeight: 120,
+                  wordBreak: "break-word",
+                }}
+              >
+                <ElectricalServices
+                  color="success"
+                  sx={{ fontSize: 50, mb: 1 }}
+                />
+                <Typography variant="h6">Meter Number</Typography>
+                <Typography variant="h5">{meterNumber}</Typography>
+              </Card>
+            </Grid>
+          </Grid>
 
-        <div className="w-full mt-6">
-          <h2 className="text-xl font-bold mb-2">📈 Leistungsentwicklung</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={history}>
-              <XAxis dataKey="time" />
-              <YAxis />
-              <CartesianGrid strokeDasharray="3 3" />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="power"
-                stroke="#82ca9d"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
+          <Box sx={{ mt: 6 }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              📈 Live Power Consumption
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={history}>
+                <XAxis dataKey="time" />
+                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="power"
+                  stroke={isDarkMode ? "#FF5252" : "#82ca9d"}
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        </>
+      )}
+    </Container>
   );
 };
 
