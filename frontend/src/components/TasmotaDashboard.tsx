@@ -11,7 +11,7 @@ import {
 import { FaBolt, FaBatteryFull, FaPlug, FaChartLine } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 
-const API_URL = "https://tasmota.hiroshui.men/tasmota"; // Externe API
+const API_URL = "/api/tasmota"; // Externe API
 
 const TasmotaDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
@@ -36,7 +36,7 @@ const TasmotaDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 10000); // every 10 secs to reduce workload
     return () => clearInterval(interval);
   }, []);
 
