@@ -10,9 +10,10 @@ const TASMOTA_IP = "http://power.meter"; // Ersetze mit deiner echten Tasmota-IP
 
 app.get("/tasmota", async (req, res) => {
   try {
+    console.log("Request from " + req.ip);
     const response = await fetch(`${TASMOTA_IP}/cm?cmnd=Status%2010`);
     const data = await response.json();
-    console.log("successfully received data");
+    console.log("successfully requested data from tasmota.");
     res.json(data);
   } catch (error) {
     console.log(error);
