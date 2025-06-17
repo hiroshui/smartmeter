@@ -1,0 +1,14 @@
+[Unit]
+Description=Tapo REST API Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/tapo-rest --port 8080 /home/smartmeter/apps/tapo-svc/devices.json
+WorkingDirectory=/home/smartmeter/apps/tapo-svc
+EnvironmentFile=/home/smartmeter/apps/tapo-svc/.env
+Restart=on-failure
+User=smartmeter
+Group=smartmeter
+
+[Install]
+WantedBy=multi-user.target
