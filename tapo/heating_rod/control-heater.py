@@ -98,13 +98,15 @@ def log_runtime_if_needed():
 def main():
     global active_seconds
     while True:
+        now=datetime.now()
+        
         if not is_within_active_hours(ACTIVE_HOURS_START, ACTIVE_HOURS_END):
             print(f"[SKIP] Outside of active time window ({ACTIVE_HOURS_START}:00–{ACTIVE_HOURS_END}:00).")
             log_runtime_if_needed()
             time.sleep(POLL_INTERVAL)
             continue
 
-        print("[INFO] Within active time window – Checking status...")
+        print(f"[INFO] {now}: Within active time window – Checking status ...")
 
         token = get_token()
         if not token:
